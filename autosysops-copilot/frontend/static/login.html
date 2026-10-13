@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign In — AutoOps Copilot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0">
+<style>
+  :root {
+    --bg-page: #100f0e;
+    --bg-card: #181715;
+    --bg-input: #1f1e1a;
+    --border: #2b2824;
+    --border-focus: #cc785c;
+    --text-primary: #fcfbf9;
+    --text-secondary: #aba499;
+    --text-muted: #736d64;
+    --claude-accent: #cc785c;
+    --claude-accent-hover: #dc886c;
+    --danger: #ef4444;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg-page);
+    color: var(--text-primary);
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 1.5rem;
+  }
+  .login-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2.5rem 2.2rem;
+    max-width: 420px;
+    width: 100%;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    position: relative;
+  }
+  .brand-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  .logo-box {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: var(--claude-accent);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 0.8rem;
+    box-shadow: 0 4px 14px rgba(204, 120, 92, 0.4);
+  }
+  h2 {
+    font-size: 1.45rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.35rem;
+  }
+  .subtitle {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+  }
+  .tab-row {
+    display: flex;
+    background: #141311;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 3px;
+    margin-bottom: 1.5rem;
+  }
+  .tab-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    padding: 0.55rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .tab-btn.active {
+    background: var(--claude-accent);
+    color: #fff;
+  }
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-bottom: 1.1rem;
+  }
+  label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+  input {
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.7rem 0.9rem;
+    color: var(--text-primary);
+    font-size: 0.92rem;
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+  input:focus {
+    border-color: var(--border-focus);
+  }
+  .submit-btn {
+    width: 100%;
+    background: var(--claude-accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 0.8rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: background 0.15s ease;
+  }
+  .submit-btn:hover {
+    background: var(--claude-accent-hover);
+  }
+  .error-box {
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #fca5a5;
+    padding: 0.65rem 0.85rem;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    margin-bottom: 1.2rem;
+    display: none;
+  }
+  .footer-hint {
+    text-align: center;
+    margin-top: 1.5rem;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+  .footer-hint a {
+    color: var(--claude-accent);
+    text-decoration: none;
+  }
+</style>
+</head>
+<body>
+
+<div class="login-card">
+  <div class="brand-header">
+    <div class="logo-box">A</div>
+    <h2>AutoOps Copilot</h2>
+    <p class="subtitle" id="form-subtitle">Sign in to access your personal workspace</p>
+  </div>
+
+  <div class="tab-row">
+    <button class="tab-btn active" id="btn-tab-login" onclick="switchMode('login')">Sign In</button>
+    <button class="tab-btn" id="btn-tab-register" onclick="switchMode('register')">Create Account</button>
+  </div>
+
+  <div class="error-box" id="error-alert"></div>
+
+  <form id="auth-form" onsubmit="handleAuth(event)">
+    <div class="form-group">
+      <label for="username">Username</label>
+      <input type="text" id="username" placeholder="e.g. sysadmin_alex" required autocomplete="username" autofocus>
+    </div>
+
+    <div class="form-group" id="group-email" style="display:none;">
+      <label for="email">Work Email</label>
+      <input type="email" id="email" placeholder="alex@company.com" autocomplete="email">
+    </div>
+
+    <div class="form-group">
+      <label for="password">Password</label>
+      <input type="password" id="password" placeholder="••••••••" required autocomplete="current-password">
+    </div>
+
+    <button type="submit" class="submit-btn" id="submit-btn">
+      <span id="submit-text">Sign In</span>
+      <span class="material-symbols-outlined" style="font-size:18px;">arrow_forward</span>
+    </button>
+  </form>
+
+  <div class="footer-hint">
+    <a href="/">← Back to Product Overview</a>
+  </div>
+</div>
+
+<script>
+let mode = "login";
+
+function switchMode(newMode) {
+  mode = newMode;
+  document.getElementById("btn-tab-login").classList.toggle("active", mode === "login");
+  document.getElementById("btn-tab-register").classList.toggle("active", mode === "register");
+  document.getElementById("group-email").style.display = (mode === "register") ? "flex" : "none";
+  document.getElementById("submit-text").textContent = (mode === "login") ? "Sign In" : "Register & Enter Workspace";
+  document.getElementById("form-subtitle").textContent = (mode === "login") ? "Sign in to access your personal workspace" : "Create your credentials for session isolation";
+  hideError();
+}
+
+function showError(msg) {
+  const box = document.getElementById("error-alert");
+  box.textContent = msg;
+  box.style.display = "block";
+}
+
+function hideError() {
+  document.getElementById("error-alert").style.display = "none";
+}
+
+async function handleAuth(e) {
+  e.preventDefault();
+  hideError();
+
+  const username = document.getElementById("username").value.trim();
+  const password = document.getElementById("password").value;
+  const email = document.getElementById("email").value.trim();
+
+  if (!username || !password) {
+    showError("Please enter both username and password.");
+    return;
+  }
+
+  const endpoint = (mode === "login") ? "/api/auth/login" : "/api/auth/register";
+  const payload = { username, password };
+  if (mode === "register") {
+    payload.email = email;
+  }
+
+  try {
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      showError(data.error || "Authentication failed. Please check credentials.");
+      return;
+    }
+    // Success: Token cookie set, forward to /app
+    window.location.href = "/app";
+  } catch (err) {
+    showError("Connection error: " + err.message);
+  }
+}
+</script>
+
+</body>
+</html>
