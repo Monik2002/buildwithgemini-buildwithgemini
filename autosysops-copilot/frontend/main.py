@@ -181,6 +181,21 @@ async def save_playbook(req: Request):
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
 
+@app.delete("/api/playbooks/{playbook_id}")
+async def delete_playbook(playbook_id: str):
+    """Delete a saved playbook from Firestore."""
+    try:
+        from google.cloud import firestore
+        db = firestore.Client(project=PROJECT_ID)
+        doc_ref = db.collection("automation_playbooks").document(playbook_id)
+        doc = doc_ref.get()
+        if not doc.exists:
+            return JSONResponse(status_code=404, content={"error": f"Playbook '{playbook_id}' not found."})
+        doc_ref.delete()
+        return JSONResponse({"status": "deleted", "id": playbook_id})
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
 @app.post("/api/dry-run")
 async def dry_run_script(req: Request):
     """Safely validate and simulate execution of a script."""

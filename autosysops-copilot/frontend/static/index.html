@@ -26,6 +26,7 @@
     --claude-accent-hover: #dc886c;
     --success: #34d399;
     --success-soft: rgba(52, 211, 153, 0.15);
+    --danger: #ef4444;
     --user-bg: #272421;
   }
   * { box-sizing: border-box; }
@@ -116,49 +117,63 @@
     justify-content: space-between;
     align-items: center;
   }
-  .nav-item {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    padding: 0.5rem 0.65rem;
-    border-radius: 6px;
-    color: var(--text-secondary);
-    font-size: 0.84rem;
-    cursor: pointer;
-    transition: all 0.15s ease;
-  }
-  .nav-item:hover, .nav-item.active {
-    background: var(--bg-surface);
-    color: var(--text-primary);
-  }
-  .nav-item.active {
-    font-weight: 600;
-  }
+  
+  /* Saved Playbook Items with Delete action */
   .saved-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.45rem 0.65rem;
+    padding: 0.5rem 0.65rem;
     border-radius: 6px;
     color: var(--text-secondary);
     font-size: 0.82rem;
     cursor: pointer;
     transition: all 0.15s ease;
     border: 1px solid transparent;
+    position: relative;
+    group: relative;
   }
   .saved-item:hover {
     background: var(--bg-surface);
     color: var(--text-primary);
     border-color: var(--border-subtle);
   }
+  .saved-item-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 145px;
+  }
+  .saved-item-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
   .saved-tag {
-    font-size: 0.7rem;
+    font-size: 0.68rem;
     background: var(--claude-accent-soft);
     color: var(--claude-accent);
     padding: 0.1rem 0.4rem;
     border-radius: 4px;
     font-family: 'JetBrains Mono', monospace;
   }
+  .delete-playbook-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 2px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.15s ease, background 0.15s ease;
+  }
+  .delete-playbook-btn:hover {
+    color: var(--danger);
+    background: rgba(239, 68, 68, 0.15);
+  }
+  
   .sidebar-footer {
     border-top: 1px solid var(--border-subtle);
     padding-top: 0.8rem;
@@ -494,10 +509,14 @@
     flex-direction: column;
     gap: 0.5rem;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
-    transition: border-color 0.2s ease;
+    transition: border-color 0.2s ease, opacity 0.2s ease;
   }
   .input-box-wrapper:focus-within {
     border-color: var(--claude-accent);
+  }
+  .input-box-wrapper.disabled {
+    opacity: 0.65;
+    pointer-events: none;
   }
   textarea {
     width: 100%;
@@ -553,10 +572,15 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background 0.15s ease;
+    transition: background 0.15s ease, opacity 0.15s ease;
   }
   .submit-btn:hover {
     background: var(--claude-accent-hover);
+  }
+  .submit-btn:disabled {
+    background: var(--border);
+    cursor: not-allowed;
+    opacity: 0.6;
   }
 
   /* Claude-Style Artifacts Side Panel */
@@ -719,31 +743,11 @@
   </button>
   
   <div class="sidebar-scrollable">
-    <div class="sidebar-section">
-      <div class="sidebar-heading">Workflow Areas</div>
-      <div class="nav-item active" onclick="setQuickTopic('User & Access Provisioning')">
-        <span class="material-symbols-outlined" style="font-size:18px;">badge</span>
-        User & Access Mgmt
-      </div>
-      <div class="nav-item" onclick="setQuickTopic('Storage Hygiene & Log Cleanup')">
-        <span class="material-symbols-outlined" style="font-size:18px;">cleaning_services</span>
-        Storage & Hygiene
-      </div>
-      <div class="nav-item" onclick="setQuickTopic('Service Health & Process Monitoring')">
-        <span class="material-symbols-outlined" style="font-size:18px;">monitoring</span>
-        Reliability & Uptime
-      </div>
-      <div class="nav-item" onclick="setQuickTopic('Container & Docker Maintenance')">
-        <span class="material-symbols-outlined" style="font-size:18px;">deployed_code</span>
-        Container Ops
-      </div>
-    </div>
-
     <!-- Firestore Saved Playbooks Section -->
     <div class="sidebar-section">
       <div class="sidebar-heading">
         <span>Saved Playbooks</span>
-        <span class="material-symbols-outlined" style="font-size:14px; cursor:pointer;" onclick="loadSavedPlaybooks()">refresh</span>
+        <span class="material-symbols-outlined" style="font-size:14px; cursor:pointer;" onclick="loadSavedPlaybooks()" title="Refresh Playbooks">refresh</span>
       </div>
       <div id="saved-playbooks-list">
         <div style="font-size:0.75rem; color:var(--text-muted); padding:0.4rem 0.5rem;">Loading catalog...</div>
@@ -810,7 +814,7 @@
       </div>
 
       <footer>
-        <div class="input-box-wrapper">
+        <div class="input-box-wrapper" id="input-box-wrapper">
           <textarea id="input" rows="1" placeholder="Describe your daily tasks or select an option above..." autofocus></textarea>
           <div class="input-actions">
             <div class="suggestions-row">
@@ -818,7 +822,7 @@
               <span class="suggestion-pill" onclick="sendPrompt('Deep dive: provide the user provisioning script with dry-run options')">🚀 Request Script Deep Dive</span>
             </div>
             <button class="submit-btn" id="send-btn" title="Send message">
-              <span class="material-symbols-outlined" style="font-size:18px;">arrow_upward</span>
+              <span class="material-symbols-outlined" id="send-btn-icon" style="font-size:18px;">arrow_upward</span>
             </button>
           </div>
         </div>
@@ -879,10 +883,14 @@
 const log = document.getElementById("log");
 const input = document.getElementById("input");
 const sendBtn = document.getElementById("send-btn");
+const sendBtnIcon = document.getElementById("send-btn-icon");
+const inputBoxWrapper = document.getElementById("input-box-wrapper");
 const artifactPanel = document.getElementById("artifact-panel");
 const artCodeDisplay = document.getElementById("art-code-display");
 const artTitle = document.getElementById("art-title");
 const dryRunBox = document.getElementById("dry-run-box");
+
+let isBusy = false;
 
 let currentArtifact = {
   title: "User Provisioning Script",
@@ -897,21 +905,42 @@ input.addEventListener("input", function() {
   this.style.height = "auto";
   this.style.height = (this.scrollHeight) + "px";
 });
+
 input.addEventListener("keydown", function(e) {
   if (e.key === "Enter" && !e.shiftKey) {
     e.preventDefault();
+    if (!isBusy) {
+      handleSubmit();
+    }
+  }
+});
+
+sendBtn.addEventListener("click", () => {
+  if (!isBusy) {
     handleSubmit();
   }
 });
-sendBtn.addEventListener("click", handleSubmit);
 
-function sendPrompt(text) {
-  input.value = text;
-  handleSubmit();
+function setBusyState(busy) {
+  isBusy = busy;
+  if (busy) {
+    sendBtn.disabled = true;
+    input.disabled = true;
+    inputBoxWrapper.classList.add("disabled");
+    sendBtnIcon.textContent = "hourglass_top";
+  } else {
+    sendBtn.disabled = false;
+    input.disabled = false;
+    inputBoxWrapper.classList.remove("disabled");
+    sendBtnIcon.textContent = "arrow_upward";
+    input.focus();
+  }
 }
 
-function setQuickTopic(topic) {
-  sendPrompt(`What recurring tasks can be automated under ${topic}? Outline the options and high-ROI wins.`);
+function sendPrompt(text) {
+  if (isBusy) return;
+  input.value = text;
+  handleSubmit();
 }
 
 function resetChat() {
@@ -1003,6 +1032,26 @@ function copyArtifactCode() {
   });
 }
 
+async function deleteSavedPlaybook(event, playbookId) {
+  event.stopPropagation();
+  if (!confirm(`Are you sure you want to delete playbook "${playbookId}"?`)) {
+    return;
+  }
+  try {
+    const res = await fetch(`/api/playbooks/${encodeURIComponent(playbookId)}`, {
+      method: "DELETE"
+    });
+    const data = await res.json();
+    if (data.status === "deleted") {
+      loadSavedPlaybooks();
+    } else {
+      alert("Error: " + (data.error || "Failed to delete"));
+    }
+  } catch (e) {
+    alert("Failed to delete playbook: " + e.message);
+  }
+}
+
 async function loadSavedPlaybooks() {
   const container = document.getElementById("saved-playbooks-list");
   container.innerHTML = `<div style="font-size:0.75rem; color:var(--text-muted); padding:0.4rem 0.5rem;">Updating...</div>`;
@@ -1019,11 +1068,18 @@ async function loadSavedPlaybooks() {
       const item = document.createElement("div");
       item.className = "saved-item";
       item.innerHTML = `
-        <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:160px;">${escapeHtml(p.title)}</span>
-        <span class="saved-tag">${escapeHtml(p.tier || 'Saved')}</span>
+        <span class="saved-item-title" title="${escapeHtml(p.title)}">${escapeHtml(p.title)}</span>
+        <div class="saved-item-actions">
+          <span class="saved-tag">${escapeHtml(p.tier || 'Saved')}</span>
+          <button class="delete-playbook-btn" title="Delete playbook" onclick="deleteSavedPlaybook(event, '${escapeHtml(p.id)}')">
+            <span class="material-symbols-outlined" style="font-size:16px;">delete</span>
+          </button>
+        </div>
       `;
       item.onclick = () => {
-        sendPrompt(`Deep dive into playbook: ${p.id} (${p.title})`);
+        if (!isBusy) {
+          sendPrompt(`Deep dive into playbook: ${p.id} (${p.title})`);
+        }
       };
       container.appendChild(item);
     });
@@ -1177,8 +1233,9 @@ function escapeCode(code) {
 
 async function handleSubmit() {
   const text = input.value.trim();
-  if (!text) return;
+  if (!text || isBusy) return;
 
+  setBusyState(true);
   appendUserMessage(text);
   input.value = "";
   input.style.height = "auto";
@@ -1207,6 +1264,8 @@ async function handleSubmit() {
       typingWrap.parentNode.removeChild(typingWrap);
     }
     appendAssistantMessage("⚠️ Error: " + err.message);
+  } finally {
+    setBusyState(false);
   }
 }
 
