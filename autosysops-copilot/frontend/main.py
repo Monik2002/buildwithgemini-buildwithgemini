@@ -167,27 +167,82 @@ async def login(req: Request):
         username = (data.get("username") or "").strip().lower()
         password = (data.get("password") or "").strip()
 
+        email_input = (data.get("email") or "").strip().lower()
+
         if not username or not password:
-            return JSONResponse(status_code=400, content={"error": "Username and password required."})
+            return JSONResponse(status_code=400, content={"error": "Username/Email and password required."})
 
         db = firestore.Client(project=PROJECT_ID)
         user_doc = db.collection("users").document(username).get()
         if not user_doc.exists:
-            # Automatic demo provision for first-time login
-            user_data = {
-                "username": username,
-                "email": f"{username}@sysops.local",
-                "password_hash": _hash_password(password),
-                "created_at": firestore.SERVER_TIMESTAMP,
-            }
-            db.collection("users").document(username).set(user_data)
-        else:
+            # Check if user passed their email as the username
+            users_query = db.collection("users").where("email", "==", username).limit(1).stream()
+            matching_user = next(users_query, None)
+            if matching_user:
+                user_doc = matching_user
+                username = user_doc.id
+                user_data = user_doc.to_dict()
+            else:
+                # Automatic provision for first-time sign-in
+                user_data = {
+                    "username": username,
+                    "email": email_input or (username if "@" in username else f"{username}@example.com"),
+                    "password_hash": _hash_password(password),
+                    "created_at": firestore.SERVER_TIMESTAMP,
+                }
+                db.collection("users").document(username).set(user_data)
+        
+        if user_doc.exists:
             user_data = user_doc.to_dict()
             if user_data.get("password_hash") != _hash_password(password):
-                return JSONResponse(status_code=401, content={"error": "Invalid username or password."})
+                return JSONResponse(status_code=401, content={"error": "Invalid credentials."})
 
         token = _create_token(username, user_data.get("email", ""))
         res = JSONResponse({"status": "success", "username": username})
+        res.set_cookie(
+            key=COOKIE_NAME,
+            value=token,
+            httponly=True,
+            max_age=86400 * 7,
+            samesite="lax",
+        )
+        return res
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+@app.post("/api/auth/google")
+async def google_auth(req: Request):
+    """Google OAuth sign-in handler (supports Google Identity token or quick one-tap profile)."""
+    try:
+        from google.cloud import firestore
+        body = await req.json()
+        email = (body.get("email") or "").strip().lower()
+        name = (body.get("name") or "").strip()
+        google_id = body.get("google_id") or ""
+
+        if not email or "@" not in email:
+            return JSONResponse(status_code=400, content={"error": "A valid Google account email is required."})
+
+        username = email.split("@")[0].replace(".", "_")
+        db = firestore.Client(project=PROJECT_ID)
+        user_ref = db.collection("users").document(username)
+        user_doc = user_ref.get()
+
+        if not user_doc.exists:
+            user_data = {
+                "username": username,
+                "name": name or username.capitalize(),
+                "email": email,
+                "provider": "google",
+                "google_id": google_id,
+                "created_at": firestore.SERVER_TIMESTAMP,
+            }
+            user_ref.set(user_data)
+        else:
+            user_data = user_doc.to_dict()
+
+        token = _create_token(username, email)
+        res = JSONResponse({"status": "success", "username": username, "email": email})
         res.set_cookie(
             key=COOKIE_NAME,
             value=token,

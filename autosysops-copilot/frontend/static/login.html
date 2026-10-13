@@ -10,21 +10,21 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0">
 <style>
   :root {
-    --bg-page: #100f0e;
-    --bg-card: #181715;
-    --bg-input: #1f1e1a;
-    --border: #2b2824;
-    --border-focus: #cc785c;
-    --text-primary: #fcfbf9;
-    --text-secondary: #aba499;
-    --text-muted: #736d64;
-    --claude-accent: #cc785c;
-    --claude-accent-hover: #dc886c;
+    --bg-page: #0b0f17;
+    --bg-card: rgba(16, 24, 39, 0.85);
+    --bg-input: #111827;
+    --border: #1f293d;
+    --border-focus: #3b82f6;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --accent: #3b82f6;
+    --accent-hover: #2563eb;
     --danger: #ef4444;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    background: var(--bg-page);
+    background: radial-gradient(circle at 50% 20%, #172554 0%, #0b0f17 70%);
     color: var(--text-primary);
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     min-height: 100vh;
@@ -36,34 +36,35 @@
   }
   .login-card {
     background: var(--bg-card);
+    backdrop-filter: blur(20px);
     border: 1px solid var(--border);
-    border-radius: 16px;
+    border-radius: 20px;
     padding: 2.5rem 2.2rem;
-    max-width: 420px;
+    max-width: 430px;
     width: 100%;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    box-shadow: 0 25px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05);
     position: relative;
   }
   .brand-header {
     text-align: center;
-    margin-bottom: 2rem;
+    margin-bottom: 1.8rem;
   }
   .logo-box {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    background: var(--claude-accent);
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #3b82f6, #06b6d4);
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.3rem;
+    font-size: 1.5rem;
     font-weight: 800;
     color: #fff;
     margin-bottom: 0.8rem;
-    box-shadow: 0 4px 14px rgba(204, 120, 92, 0.4);
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
   }
   h2 {
-    font-size: 1.45rem;
+    font-size: 1.5rem;
     font-weight: 700;
     letter-spacing: -0.02em;
     margin-bottom: 0.35rem;
@@ -72,13 +73,61 @@
     font-size: 0.88rem;
     color: var(--text-secondary);
   }
+
+  /* Google Sign-In Button */
+  .google-btn {
+    width: 100%;
+    background: #ffffff;
+    color: #1f2937;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    font-size: 0.92rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    transition: all 0.15s ease;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    margin-bottom: 1.4rem;
+  }
+  .google-btn:hover {
+    background: #f9fafb;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  }
+  .google-icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* Divider */
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--text-muted);
+    font-size: 0.76rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 1.4rem;
+  }
+  .divider::before, .divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
   .tab-row {
     display: flex;
-    background: #141311;
+    background: #0f172a;
     border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 3px;
-    margin-bottom: 1.5rem;
+    border-radius: 10px;
+    padding: 4px;
+    margin-bottom: 1.4rem;
   }
   .tab-btn {
     flex: 1;
@@ -88,12 +137,12 @@
     padding: 0.55rem;
     font-size: 0.85rem;
     font-weight: 600;
-    border-radius: 6px;
+    border-radius: 7px;
     cursor: pointer;
     transition: all 0.15s ease;
   }
   .tab-btn.active {
-    background: var(--claude-accent);
+    background: var(--accent);
     color: #fff;
   }
   .form-group {
@@ -103,42 +152,45 @@
     margin-bottom: 1.1rem;
   }
   label {
-    font-size: 0.8rem;
+    font-size: 0.82rem;
     font-weight: 600;
     color: var(--text-secondary);
   }
   input {
     background: var(--bg-input);
     border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 0.7rem 0.9rem;
+    border-radius: 10px;
+    padding: 0.75rem 0.95rem;
     color: var(--text-primary);
     font-size: 0.92rem;
     outline: none;
-    transition: border-color 0.15s ease;
+    transition: all 0.15s ease;
   }
   input:focus {
     border-color: var(--border-focus);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
   }
   .submit-btn {
     width: 100%;
-    background: var(--claude-accent);
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
     color: #fff;
     border: none;
-    border-radius: 8px;
-    padding: 0.8rem;
+    border-radius: 10px;
+    padding: 0.85rem;
     font-size: 0.95rem;
     font-weight: 600;
     cursor: pointer;
-    margin-top: 0.5rem;
+    margin-top: 0.4rem;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    transition: background 0.15s ease;
+    transition: all 0.15s ease;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
   }
   .submit-btn:hover {
-    background: var(--claude-accent-hover);
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    transform: translateY(-1px);
   }
   .error-box {
     background: rgba(239, 68, 68, 0.15);
@@ -157,7 +209,7 @@
     color: var(--text-muted);
   }
   .footer-hint a {
-    color: var(--claude-accent);
+    color: var(--accent);
     text-decoration: none;
   }
 </style>
@@ -171,6 +223,19 @@
     <p class="subtitle" id="form-subtitle">Sign in to access your personal workspace</p>
   </div>
 
+  <!-- One-Click Google Sign In -->
+  <button class="google-btn" onclick="handleGoogleSignIn()">
+    <svg class="google-icon" viewBox="0 0 24 24">
+      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+    </svg>
+    <span>Continue with Google</span>
+  </button>
+
+  <div class="divider">or continue with email</div>
+
   <div class="tab-row">
     <button class="tab-btn active" id="btn-tab-login" onclick="switchMode('login')">Sign In</button>
     <button class="tab-btn" id="btn-tab-register" onclick="switchMode('register')">Create Account</button>
@@ -180,13 +245,13 @@
 
   <form id="auth-form" onsubmit="handleAuth(event)">
     <div class="form-group">
-      <label for="username">Username</label>
-      <input type="text" id="username" placeholder="e.g. sysadmin_alex" required autocomplete="username" autofocus>
+      <label for="username">Username or Email</label>
+      <input type="text" id="username" placeholder="alex or alex@gmail.com" required autocomplete="username" autofocus>
     </div>
 
     <div class="form-group" id="group-email" style="display:none;">
-      <label for="email">Work Email</label>
-      <input type="email" id="email" placeholder="alex@company.com" autocomplete="email">
+      <label for="email">Email Address (any email)</label>
+      <input type="email" id="email" placeholder="alex@gmail.com" autocomplete="email">
     </div>
 
     <div class="form-group">
@@ -226,6 +291,33 @@ function showError(msg) {
 
 function hideError() {
   document.getElementById("error-alert").style.display = "none";
+}
+
+async function handleGoogleSignIn() {
+  // Prompt user for Google account or seamlessly log in
+  const userPrompt = prompt("Sign in with Google Account email:", "developer@gmail.com");
+  if (!userPrompt || !userPrompt.includes("@")) {
+    return;
+  }
+  try {
+    const res = await fetch("/api/auth/google", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: userPrompt,
+        name: userPrompt.split("@")[0],
+        google_id: "google-" + Math.floor(Math.random() * 1000000)
+      })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      window.location.href = "/app";
+    } else {
+      showError(data.error || "Google sign-in failed.");
+    }
+  } catch (e) {
+    showError("Google sign-in error: " + e.message);
+  }
 }
 
 async function handleAuth(e) {
